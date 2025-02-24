@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purification Buffer Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            max-width: 400px;
+            margin: auto;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        select, input, button {
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 16px;
+        }
+        .result {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .note {
+            font-size: 14px;
+            color: #555;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Purification Buffer Calculator</h2>
+        
+        <label>Select Purification Type:</label>
+        <select id="purificationType" onchange="checkSpecialNote()">
+            <option value="">-- Select --</option>
+            <option value="protA_desalting">ProtA + Desalting</option>
+            <option value="protA_sepax">ProtA + SEPAX</option>
+            <option value="protA_sepax_asx560">ProtA + SEPAX with ASX-560</option>
+            <option value="his_tagged">His-tagged Purification 5mL</option>
+        </select>
+
+        <label>Enter Number of Batches:</label>
+        <input type="number" id="batches" placeholder="Enter batch count">
+
+        <button onclick="calculateBuffers()">Calculate</button>
+
+        <div id="specialNote" class="note" style="display: none;">
+            <strong>Note:</strong> Every batch is counted x2, taking into account the blank after it.
+        </div>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        // Predefined buffer volumes for each purification type
+        const purificationData = {
+            "protA_desalting": {
+                "PBS": 750,
+                "Acetate pH3": 100,
+                "Acetate pH5": 100,
+                "0.5M NaOH": 100,
+                "0.2M NaOH": 200,
+                "HAc": 100
+            },
+            "protA_sepax": {
+                "PBS": 600,
+                "Acetate pH3": 100,
+                "Acetate pH5": 100,
+                "0.5M NaOH": 100,
+                "HAc": 100,
+                "6M Guanidine": 320
+            },
+            "protA_sepax_asx560": {
+                "PBS": 450,
+                "Acetate pH3": 100,
+                "Acetate pH5": 100,
+                "0.5M NaOH": 150,
+                "HAc": 100,
+                "PBS Teledyne": 450,
+                "NaOH Teledyne": 450
+            },
+            "his_tagged": {
+                "Binding Buffer": 600,
+                "Elution Buffer": 300,
+                "0.5M NaOH": 160
+            }
+        };
+
+        function checkSpecialNote() {
+            const purificationType = document.getElementById("purificationType").value;
+            const specialNoteDiv = document.getElementById("specialNote");
+
+            if (purificationType === "his_tagged") {
+                specialNoteDiv.style.display = "block";
+            } else {
+                specialNoteDiv.style.display = "none";
+            }
+        }
+
+        function calculateBuffers() {
+            const purificationType = document.getElementById("purificationType").value;
+            let batches = parseInt(document.getElementById("batches").value);
+
+            if (!purificationType || isNaN(batches) || batches <= 0) {
+                document.getElementById("result").innerHTML = "<p style='color: red;'>Please select a purification type and enter a valid number of batches.</p>";
+                return;
+            }
+
+            if (purificationType === "his_tagged") {
+                batches *= 2; // Double batch count for His-tagged purification
+            }
+
+            const bufferValues = purificationData[purificationType];
+            let resultHTML = "<h3>Buffer Requirements:</h3><ul>";
+
+            for (let buffer in bufferValues) {
+                let totalVolume = bufferValues[buffer] * batches;
+                resultHTML += `<li><strong>${buffer}:</strong> ${totalVolume} mL</li>`;
+            }
+
+            resultHTML += "</ul>";
+            document.getElementById("result").innerHTML = resultHTML;
+        }
+    </script>
+
+</body>
+</html>
